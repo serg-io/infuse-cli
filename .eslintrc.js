@@ -19,7 +19,6 @@ module.exports = {
 		 * https://github.com/benmosher/eslint-plugin-import/blob/master/docs/rules/extensions.md
 		 */
 		'import/extensions': ['error', 'always', { ignorePackages: true }],
-		'import/no-extraneous-dependencies': 'off',
 		/**
 		 * Use tabs for indentation instead of spaces.
 		 * https://github.com/airbnb/javascript#whitespace--spaces
