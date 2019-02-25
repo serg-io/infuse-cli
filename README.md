@@ -1,3 +1,12 @@
+This package offers a command line interface (CLI) to convert HTML templates (HTML files) to ES
+Modules to be used with [infuse.host](https://infuse.host/).
+
+## Installation
+
+```bash
+$ npm install infuse-cli
+```
+
 ## Usage
 
 	infuse [options] <input> [output]

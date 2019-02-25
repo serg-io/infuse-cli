@@ -40,7 +40,8 @@
     "infuse": "bin/cli.js"
   },
   "files": [
-    "bin"
+    "bin",
+    "src"
   ],
   "scripts": {
     "lint": "eslint bin/*.js src/*.js",
