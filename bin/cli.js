@@ -2,36 +2,28 @@
 
 const path = require('path');
 const meow = require('meow');
+const { setConfigs } = require('infuse.host/lib/configs');
 const { default: createESModule } = require('infuse.host/lib/createESModule');
 const fs = require('../src/fs');
 const { isPattern, pick, readStream, searchFiles } = require('../src/utils');
 
+const STRING_FLAG = { type: 'string' };
+const INFUSE_FLAGS = [
+	'configsPath', 'camelCaseEvents', 'constantExp', 'contextFunctionId', 'eventHandlerExp',
+	'eventName', 'placeholderId', 'sweepFlag', 'tags', 'tagsName', 'templateId', 'watchExp',
+];
 const { R_OK: READABLE } = fs.constants;
 const INPUT_ERROR = 'The input must be a pattern or a file or directory that exists and is readable.';
 const OUTPUT_ERROR = 'The output must be a directory if the input is a pattern or a directory.';
 
-const cli = meow(`
-  Usage
-    html-esm [options] <input> [output]
-    cat <input> | html-esm [options] > output
+let help = fs.readFileSync(path.resolve(__dirname, '../README.md'), 'utf8');
+help = help.substring(help.indexOf('Usage')).replace(/^\t/gm, '    ').replace(/###? /g, '');
 
-  Options
-    --help          Show this help message.
-    --cwd 
-    -e, --encoding 
-    -r, --recursive 
-    --configs-path
-
-  Examples
-`, {
-	description: 'Parse templates in HTML files and generate ES Module files.',
+const cli = meow({
+	description: 'Parse HTML templates and generate ES Modules to be used with infuse.host.',
+	help,
 	flags: {
-		configsPath: {
-			type: 'string',
-		},
-		directory: {
-			type: 'string',
-		},
+		cwd: STRING_FLAG,
 		encoding: {
 			alias: 'e',
 			default: 'utf8',
@@ -42,12 +34,55 @@ const cli = meow(`
 			default: false,
 			type: 'boolean',
 		},
+		configsPath: STRING_FLAG,
+		camelCaseEvents: {
+			default: false,
+			type: 'boolean',
+		},
+		constantExp: STRING_FLAG,
+		contextFunctionId: STRING_FLAG,
+		eventHandlerExp: STRING_FLAG,
+		eventName: STRING_FLAG,
+		placeholderId: STRING_FLAG,
+		sweepFlag: STRING_FLAG,
+		tags: STRING_FLAG,
+		tagsName: STRING_FLAG,
+		templateId: STRING_FLAG,
+		watchExp: STRING_FLAG,
 	},
 });
 
+/**
+ * Creates an object of options, from CLI flags, that are only relevant to infuse.host.
+ *
+ * @function getInfuseOptions
+ * @returns {Object} Infuse.host options.
+ */
+function getInfuseOptions() {
+	const opts = pick(cli.flags, INFUSE_FLAGS);
+
+	// Convert the "tags" option into an array.
+	if (typeof opts.tags === 'string') {
+		opts.tags = opts.tags.split(',');
+	}
+
+	// Convert these options into regular expressions if the start and end with a slash.
+	['constantExp', 'eventHandlerExp', 'watchExp'].forEach((key) => {
+		const value = opts[key];
+
+		if (value && value.startsWith('/') && value.endsWith('/')) {
+			opts[key] = new RegExp(value.substring(1, value.length - 1));
+		}
+	});
+
+	return opts;
+}
+
+const options = getInfuseOptions();
 const globOptions = pick(cli.flags, ['cwd']);
-const infuseOptions = pick(cli.flags, ['configsPath']);
 const flags = pick(cli.flags, ['encoding', 'recursive']);
+
+setConfigs(options);
 
 /**
  * Parses the HTML templates in the given `input` and writes a generated ES Module to the
@@ -62,7 +97,7 @@ async function generateModule(input, output) {
 	const { encoding } = flags;
 	const source = typeof input === 'string' ? fs.createReadStream(input, encoding) : input;
 	const html = await readStream(source, encoding);
-	const esm = createESModule(html, infuseOptions);
+	const esm = createESModule(html, options);
 
 	/**
 	 * If `dest` is a string (a path to the destination file) create its containing directory (in

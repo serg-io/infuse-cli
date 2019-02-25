@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { pick, promisify } = require('./utils');
 
-const PICK = ['constants', 'createReadStream', 'createWriteStream'];
+const PICK = ['constants', 'createReadStream', 'createWriteStream', 'readFileSync'];
 const ASYNC_FUNCTIONS = ['access', 'mkdir', 'readFile', 'stat', 'writeFile'];
 
 /**
