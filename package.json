@@ -1,6 +1,6 @@
 {
   "name": "infuse-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Parse HTML templates and generate ES Modules to be used with infuse.host.",
   "license": "MIT",
   "author": "Sergio Alcantara (https://github.com/serg-io)",
